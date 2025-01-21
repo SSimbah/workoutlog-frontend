@@ -1,9 +1,64 @@
 import Head from "next/head";
-import { Box, Button, Flex, Heading, Input, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Input, Text, useToast } from "@chakra-ui/react";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/router";
 
 
 export default function Home() {
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
+
+  const router = useRouter();
+  const toast = useToast();
+
+  const handleInputChange = (e) => {
+    console.log('Input changed:', e.target.name, e.target.value);
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    console.log('Submitting form data:', JSON.stringify(formData));
+    
+    try {
+      const response = await fetch("http://localhost:5000/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const data = await response.json();
+      
+      toast({
+        title: "Login successful",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      router.push("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Could not connect to the server. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
   return (
     <>
       <Head>
@@ -24,24 +79,29 @@ export default function Home() {
               Welcome to ActiveLog
             </Heading>
             <Input
-              placeholder="user@gmail.com"
+              name="username"
+              placeholder="Username"
               variant="filled"
-              mb="3"
+              mb="4"
               size="md"
-              type="email"
               focusBorderColor="#f1f1d9"
               color="black"
+              value={formData.username}
+              onChange={handleInputChange}
             />
             <Input
+              name="password"
               placeholder="**********"
               variant="filled"
-              mb="6"
+              mb="8"
               size="md"
               type="password"
               focusBorderColor="#f1f1d9"
               color="black"
+              value={formData.password}
+              onChange={handleInputChange}
             />
-            <Button background="#f1f1d9">Log in</Button>
+            <Button background="#f1f1d9" onClick={handleLoginSubmit}>Log in</Button>
             <Text textAlign="center" color="white">
               Don’t have an account?{" "}
               <Link href="/register">

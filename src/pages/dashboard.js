@@ -14,6 +14,7 @@ export default function Dashboard() {
       </Head>
         <main style={{maxHeight: "100vh", height: "100vh"}}>
         <Text>Dashboard</Text>
+        <Text>Practice</Text>
         </main>
     </>
   );
